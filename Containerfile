@@ -29,6 +29,10 @@ USER 0
 
 WORKDIR /build
 
+# Hummingbird's python:3.13-builder doesn't ship git in its default set —
+# install it just for the upstream clone (this whole stage is discarded anyway).
+RUN microdnf install -y --nodocs git && microdnf clean all
+
 # We pull the upstream source at a pinned tag for reproducible builds.
 ARG WORKSPACE_MCP_VERSION=1.21.2
 RUN git clone --depth 1 --branch v${WORKSPACE_MCP_VERSION} \

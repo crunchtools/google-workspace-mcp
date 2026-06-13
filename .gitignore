@@ -1,0 +1,21 @@
+# Build outputs
+*.tar
+*.sbom.json
+*.spdx.json
+
+# Local config / secrets (must never be committed)
+.env
+.env.local
+secrets/
+credentials*.json
+*.oauth.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Editor
+.vscode/
+.idea/
+*.swp

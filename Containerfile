@@ -76,8 +76,9 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=45s --retries=3 \
     CMD ["/app/venv/bin/python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5).status == 200 else 1)"]
 
-# Invoke upstream's main.py directly. Streamable-HTTP transport with bind on
-# 0.0.0.0 inside the container so podman's port publishing reaches it; OAuth
-# credentials, scope config, etc. all arrive via env vars from the systemd unit.
+# Invoke upstream's main.py directly. Upstream's argparse only accepts
+# `--transport` + a handful of TOOL_TIER/TOOLS pass-throughs; host/port are
+# controlled by fastmcp's defaults (binds 0.0.0.0:8000) plus env vars
+# (WORKSPACE_MCP_PORT, etc.) so don't pass --host/--port as CLI args.
 ENTRYPOINT ["/app/venv/bin/python", "/app/source/main.py"]
-CMD ["--transport", "streamable-http", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["--transport", "streamable-http"]

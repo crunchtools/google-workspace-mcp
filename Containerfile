@@ -44,6 +44,19 @@ RUN git clone --depth 1 --branch v${WORKSPACE_MCP_VERSION} \
 RUN python3.13 -m venv /app/venv && \
     /app/venv/bin/pip install --no-cache-dir /build/src
 
+# Upstream's pyproject.toml only requires setuptools>=61.0 and doesn't pin
+# msgpack directly (it's transitive), so pip resolves whatever the venv's
+# bundled setuptools and the dependency tree's oldest-satisfying msgpack
+# happen to be -- not necessarily current. Force both to the CVE-fixed
+# versions post-install; upstream's own constraints are loose enough that
+# this doesn't fight the resolver.
+#   - msgpack 1.1.2 -> 1.2.1: GHSA-6v7p-g79w-8964 (out-of-bounds read/crash
+#     on Unpacker reuse after error, HIGH)
+#   - setuptools 70.3.0 -> 78.1.1: CVE-2025-47273 (path traversal in
+#     PackageIndex, HIGH)
+RUN /app/venv/bin/pip install --no-cache-dir --upgrade \
+        'msgpack>=1.2.1' 'setuptools>=78.1.1'
+
 # Stash the source tree in /app/source — main.py and its sibling auth/, etc.
 # modules all need to live together at runtime (they import each other relatively).
 RUN cp -r /build/src /app/source && \

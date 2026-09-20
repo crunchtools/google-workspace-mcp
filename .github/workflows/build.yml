@@ -1,7 +1,8 @@
 name: Build and Push google-workspace-mcp
 
 # Triggers (deliberately NO `schedule:` — see crunchtools/constitution validate-cascade):
-#   push                — Containerfile / workflow changes
+#   push                — Containerfile / workflow changes, or a vX.Y.Z tag
+#                         (constitution II: tags trigger release workflows)
 #   pull_request        — Trivy scan + SBOM only, no push
 #   repository_dispatch parent-image-updated — fired when an upstream image we
 #     FROM rebuilds (handled by Hermes / the cascade).
@@ -24,6 +25,7 @@ name: Build and Push google-workspace-mcp
 on:
   push:
     branches: [main]
+    tags: ['v*']
     paths:
       - 'Containerfile'
       - '.github/workflows/build.yml'
@@ -80,6 +82,7 @@ jobs:
           format: "table"
           exit-code: "1"
           severity: "CRITICAL,HIGH"
+          trivyignores: ".trivyignore"
 
       - name: Generate SBOM (Trivy / SPDX-JSON)
         uses: aquasecurity/trivy-action@v0.36.0

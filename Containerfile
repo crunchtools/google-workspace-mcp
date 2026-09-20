@@ -44,6 +44,34 @@ RUN git clone --depth 1 --branch v${WORKSPACE_MCP_VERSION} \
 RUN python3.13 -m venv /app/venv && \
     /app/venv/bin/pip install --no-cache-dir /build/src
 
+# Upstream's pyproject.toml only requires setuptools>=61.0 and doesn't pin
+# msgpack directly (it's transitive), so pip resolves whatever the venv's
+# bundled setuptools and the dependency tree's oldest-satisfying msgpack
+# happen to be -- not necessarily current. Force both to the CVE-fixed
+# versions post-install; upstream's own constraints are loose enough that
+# this doesn't fight the resolver.
+#   - msgpack 1.1.2 -> 1.2.1: GHSA-6v7p-g79w-8964 (out-of-bounds read/crash
+#     on Unpacker reuse after error, HIGH)
+#   - setuptools 70.3.0 -> 78.1.1: CVE-2025-47273 (path traversal in
+#     PackageIndex, HIGH)
+RUN /app/venv/bin/pip install --no-cache-dir --upgrade \
+        'msgpack>=1.2.1' 'setuptools>=78.1.1'
+
+# The upgrade above only touches the top-level packages -- it does not touch
+# pip's OWN internally vendored copies. pip bundles frozen, unrelated
+# snapshots of msgpack and setuptools/pkg_resources under pip/_vendor for its
+# own use (see pip/_vendor/vendor.txt); pip 26.2 vendors msgpack==1.1.2 and
+# setuptools==70.3.0, the exact same CVEs, and `pip install --upgrade` cannot
+# reach code bundled inside pip itself. This is why the bump above alone
+# still failed the Trivy gate. Since this image never invokes pip at runtime
+# (venv is built once here; the runtime stage only runs main.py), the real
+# fix is to remove pip from the shipped venv entirely, matching this
+# Containerfile's own "no build tools in the runtime image" intent, which
+# pip's presence here was quietly violating anyway.
+RUN /app/venv/bin/python -m pip uninstall -y pip && \
+    rm -rf /app/venv/lib/python3.13/site-packages/pip* \
+           /app/venv/bin/pip /app/venv/bin/pip3 /app/venv/bin/pip3.13
+
 # Stash the source tree in /app/source — main.py and its sibling auth/, etc.
 # modules all need to live together at runtime (they import each other relatively).
 RUN cp -r /build/src /app/source && \

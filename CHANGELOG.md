@@ -6,6 +6,21 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-09-20
+
+### Security
+
+- Added `.trivyignore` for GHSA-6v7p-g79w-8964 (msgpack 1.1.2) and
+  CVE-2025-47273 (setuptools 70.3.0). v1.0.2 removed pip from this repo's own
+  venv, but the same two CVEs are also baked into the runtime base image
+  itself (`quay.io/hummingbird/python:3.13`'s own vendored pip at
+  `/usr/local/lib/python3.13/site-packages`), which this repo does not build
+  and cannot patch -- the runtime stage is distroless with no shell to strip
+  it. Confirmed unreachable: not on PATH, never invoked, no lazy install or
+  package-index call anywhere in this image. Accepted by Scott (2026-09-20);
+  see `.trivyignore` for the full justification. Revisit if Hummingbird ships
+  a base image without the stale vendored pip.
+
 ## [1.0.2] - 2026-09-20
 
 ### Security

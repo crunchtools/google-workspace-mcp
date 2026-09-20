@@ -1,0 +1,26 @@
+# The venv this Containerfile builds ships no pip (see v1.0.2: pip is deleted
+# from /app/venv before the runtime COPY, since nothing at runtime needs it —
+# ENTRYPOINT execs /app/venv/bin/python directly, never pip).
+#
+# What remains is pip's OWN vendored copy of these libraries, baked into the
+# runtime base image itself (quay.io/hummingbird/python:3.13, not built by
+# this repo) at /usr/local/lib/python3.13/site-packages/pip-26.2.dist-info.
+# Confirmed by extracting that base image's layers directly: pip 26.2's own
+# pip/_vendor/vendor.txt pins msgpack==1.1.2 and setuptools==70.3.0, matching
+# these findings exactly.
+#
+# Not fixable here: the versions are frozen inside pip itself, and this
+# repo's runtime stage is distroless (no shell, no RUN) — there is no way for
+# this Containerfile to reach into an inherited FROM layer and delete files
+# from it. A real fix requires Hummingbird shipping a base image without a
+# stale vendored pip.
+#
+# Not reachable: that /usr/local install isn't on PATH (ENV PATH puts
+# /app/venv/bin first) and nothing in this image ever invokes pip at
+# runtime — there's no lazy install, no package-index call, no code path
+# that touches pip/_vendor at all after the image is built.
+#
+#   HIGH  GHSA-6v7p-g79w-8964  msgpack 1.1.2      OOB read / crash on Unpacker reuse
+#   HIGH  CVE-2025-47273       setuptools 70.3.0  path traversal in PackageIndex
+GHSA-6v7p-g79w-8964
+CVE-2025-47273

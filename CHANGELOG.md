@@ -6,6 +6,25 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-09-20
+
+### Security
+
+- v1.0.1's msgpack/setuptools bump didn't actually close the Trivy gate: the
+  vulnerable versions Trivy flagged (msgpack 1.1.2, setuptools 70.3.0) were
+  never the top-level packages -- they're pip's OWN internally vendored
+  copies (`pip/_vendor`, pinned in `pip/_vendor/vendor.txt`), frozen inside
+  pip 26.2 itself and untouched by `pip install --upgrade`. Confirmed by
+  building the image locally and inspecting the venv directly. Since this
+  image never runs pip at runtime (the venv is built once in the builder
+  stage; the runtime stage only execs main.py), the fix is to strip pip out
+  of the shipped venv entirely -- removing the vulnerable code rather than
+  papering over the finding, and incidentally fixing an actual violation of
+  this Containerfile's own "no build tools in the runtime image" intent.
+  Verified: no `pip` package, dist-info, or `_vendor` tree remains anywhere
+  in the built image; the app's own msgpack (1.2.2) and setuptools (84.0.0)
+  still import cleanly; `main.py` still parses.
+
 ## [1.0.1] - 2026-09-20
 
 ### Security

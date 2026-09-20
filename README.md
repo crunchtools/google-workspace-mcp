@@ -6,8 +6,9 @@ the crunchtools deployment of upstream
 packaged under the crunchtools container image profile.
 
 Sister to the rest of the [crunchtools/mcp-*](https://github.com/crunchtools)
-fleet centralized on lotor. Consumed by Josui (Claude Code) via the SSH
-forward tunnel and by Kagetora (Hermes) via the `crunchtools` podman network.
+fleet. Speaks streamable HTTP, so it's reachable both by container-network DNS
+and, for a client running outside the container network, by whatever port
+forwarding or tunnel that deployment sets up.
 
 ## Build
 
@@ -19,34 +20,27 @@ The image is multi-stage Hummingbird Python 3.13: builder pulls + installs
 upstream at a pinned tag, runtime ships only the venv + source tree + Python.
 No build tools, no package manager, no shell.
 
-## Run — two-instance lotor deployment shape
+## Run
 
-Scott runs two parallel instances on lotor with different OAuth credentials —
-one for the Gmail-account workspace, one for the Red Hat workspace. Each lives
-under its own `/srv/<name>.crunchtools.com/` tree following the crunchtools
-service convention.
+Running more than one instance — e.g. separate Google accounts or workspaces
+— just means separate containers with separate OAuth credentials and data
+dirs; nothing in the image assumes there's only one.
 
 ```bash
 podman run -d --name google-workspace-personal --rm \
   --network crunchtools \
   -p 127.0.0.1:8011:8000 \
-  -v /srv/google-workspace-personal.crunchtools.com/data:/app/data:Z \
-  --env-file /srv/google-workspace-personal.crunchtools.com/config/google-workspace-personal.env \
+  -v /path/to/google-workspace-personal/data:/app/data:Z \
+  --env-file /path/to/google-workspace-personal/config/google-workspace-personal.env \
   quay.io/crunchtools/google-workspace-mcp
 ```
 
-```bash
-podman run -d --name google-workspace-work --rm \
-  --network crunchtools \
-  -p 127.0.0.1:8010:8000 \
-  -v /srv/google-workspace-work.crunchtools.com/data:/app/data:Z \
-  --env-file /srv/google-workspace-work.crunchtools.com/config/google-workspace-work.env \
-  quay.io/crunchtools/google-workspace-mcp
-```
-
-Both bind to `127.0.0.1` only — never public. Josui reaches them via the
-Breetai → lotor SSH tunnel (`~/.config/systemd/user/lotor-mcp-tunnel.service`);
-Kagetora reaches them by container DNS (`http://google-workspace-personal:8000/mcp`).
+Bind to `127.0.0.1` only — never public — and reach it from outside the
+container network however that deployment reaches other local MCP servers
+(SSH tunnel, gateway, etc; a client on the same container network can just
+use container DNS, e.g. `http://google-workspace-personal:8000/mcp`). Which
+tools/instances a given agent can reach is the deployment's decision, not
+something this image enforces.
 
 ## Composition
 
@@ -59,14 +53,14 @@ Kagetora reaches them by container DNS (`http://google-workspace-personal:8000/m
 ## Configuration
 
 The upstream's full config matrix is documented at
-[workspacemcp.com](https://workspacemcp.com/). For the crunchtools deployment
-the env file at `/srv/<name>.crunchtools.com/config/<name>.env` typically
-contains the Google OAuth client ID + secret + scope set; the OAuth refresh
-token lives in the bind-mounted data dir at `/app/data/credentials.json`.
+[workspacemcp.com](https://workspacemcp.com/). The env file passed via
+`--env-file` typically contains the Google OAuth client ID + secret + scope
+set; the OAuth refresh token lives in the bind-mounted data dir at
+`/app/data/credentials.json`.
 
 OAuth refresh tokens are bound to the OAuth *application* (client ID), not the
-host, so copying the existing token from Breetai to lotor works without
-re-consent — same client, same scopes.
+host, so copying an existing token to a new host works without re-consent —
+same client, same scopes.
 
 ## Why no `schedule:` trigger
 

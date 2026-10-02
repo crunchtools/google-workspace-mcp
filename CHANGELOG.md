@@ -13,6 +13,12 @@ All notable changes to this project are documented here. The format follows
 - Constitution validation pinned to v1.18.0 via `constitution.yml`.
 - Dependabot auto-merges GitHub Actions minor and patch updates.
 
+### Security
+
+- Trivy ignores CVE-2026-97687 and CVE-2026-97689 in urllib3 2.7.0 vendored
+  inside the Hummingbird base image's pip, which the image never runs; the
+  venv's own urllib3 is 2.8.0.
+
 ## [1.0.3] - 2026-09-20
 
 ### Security

@@ -29,6 +29,7 @@ on:
     paths:
       - 'Containerfile'
       - '.github/workflows/build.yml'
+      - '.trivyignore'
   pull_request:
     branches: [main]
   repository_dispatch:

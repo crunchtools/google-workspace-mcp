@@ -6,7 +6,7 @@
 # runtime base image itself (quay.io/hummingbird/python:3.13, not built by
 # this repo) at /usr/local/lib/python3.13/site-packages/pip-26.2.dist-info.
 # Confirmed by extracting that base image's layers directly: pip 26.2's own
-# pip/_vendor/vendor.txt pins msgpack==1.1.2 and setuptools==70.3.0, matching
+# pip/_vendor/vendor.txt pins msgpack==1.1.2, setuptools==70.3.0 and urllib3==2.7.0, matching
 # these findings exactly.
 #
 # Not fixable here: the versions are frozen inside pip itself, and this
@@ -22,5 +22,10 @@
 #
 #   HIGH  GHSA-6v7p-g79w-8964  msgpack 1.1.2      OOB read / crash on Unpacker reuse
 #   HIGH  CVE-2025-47273       setuptools 70.3.0  path traversal in PackageIndex
+#   HIGH  CVE-2026-97687       urllib3 2.7.0      HTTPS proxy TLS interception
+#   HIGH  CVE-2026-97689       urllib3 2.7.0      unbounded-memory DoS
+#   (the venv's own urllib3 is 2.8.0, fixed; only pip's vendored copy is old)
 GHSA-6v7p-g79w-8964
 CVE-2025-47273
+CVE-2026-97687
+CVE-2026-97689

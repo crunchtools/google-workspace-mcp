@@ -13,6 +13,11 @@ All notable changes to this project are documented here. The format follows
 - Constitution validation pinned to v1.18.0 via `constitution.yml`.
 - Dependabot auto-merges GitHub Actions minor and patch updates.
 
+### Fixed
+
+- A `.trivyignore` change now rebuilds the image; the push path filter
+  skipped it, leaving main's last build red after #13 merged.
+
 ### Security
 
 - Trivy ignores CVE-2026-97687 and CVE-2026-97689 in urllib3 2.7.0 vendored

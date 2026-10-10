@@ -1,6 +1,6 @@
 # google-workspace-mcp Constitution
 
-> **Version:** 1.0.0
+> **Version:** 1.1.0
 > **Ratified:** 2026-10-02
 > **Status:** Active
 > **Inherits:** [crunchtools/constitution](https://github.com/crunchtools/constitution) v1.22.0
@@ -35,7 +35,17 @@ instance is the deployment's decision, not the image's.
 
 ## Patches
 
-None to upstream code. The Containerfile changes how it is packaged:
+Patches to upstream source are carried in `patches/` and applied in the
+builder stage after the clone. Each patch must apply cleanly against the
+pinned `WORKSPACE_MCP_VERSION` tag. Drop a patch file (and its
+`COPY`/`RUN` lines if `patches/` becomes empty) once its upstream PR merges
+and the version pin is bumped past the merge commit.
+
+| File | Upstream PR | Description | Status |
+|------|-------------|-------------|--------|
+| `0001-tab-id-for-doc-reads.patch` | taylorwilsdon/google_workspace_mcp#1214 | Add `tab_id` param to `get_doc_content` and `get_doc_as_markdown`; auto-extract from `?tab=` URLs | Pending merge |
+
+The Containerfile also changes how upstream is packaged (not source patches):
 
 - Multi-stage build on `quay.io/hummingbird/python:3.13-builder` /
   `quay.io/hummingbird/python:3.13`; upstream's `main.py` runs directly from
@@ -61,4 +71,5 @@ None to upstream code. The Containerfile changes how it is packaged:
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 1.1.0 | 2026-10-03 | Document patches/ infrastructure and in-flight upstream patches |
 | 1.0.0 | 2026-10-02 | Initial manifest under constitution v1.18.0 |

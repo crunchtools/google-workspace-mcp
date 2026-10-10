@@ -6,6 +6,17 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `patches/` infrastructure: local patches applied to the upstream source
+  during the builder stage, carried until upstream merges and the version
+  pin is bumped.
+- `patches/0001-tab-id-for-doc-reads.patch`: adds `tab_id` parameter to
+  `get_doc_content` and `get_doc_as_markdown`, fixing timeout failures on
+  multi-tab docs whose Transcript tab exceeds downstream scan limits.
+  Upstream PR: taylorwilsdon/google_workspace_mcp#1214
+- Constitution v1.1.0: documents patches/ policy and the patch table.
+
 ### Changed
 
 - Added the per-repo constitution as a v1.18.0 manifest (Forked MCP Server):

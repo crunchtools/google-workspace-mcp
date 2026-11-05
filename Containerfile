@@ -38,6 +38,13 @@ ARG WORKSPACE_MCP_VERSION=1.21.2
 RUN git clone --depth 1 --branch v${WORKSPACE_MCP_VERSION} \
         https://github.com/taylorwilsdon/google_workspace_mcp.git /build/src
 
+# Local patches carried while awaiting upstream merge.
+# Each patch must apply cleanly against the pinned WORKSPACE_MCP_VERSION tag.
+# Remove a file here (and from patches/) once its PR is merged upstream and
+# the version pin is bumped past the merge commit.
+COPY patches/ /build/patches/
+RUN git -C /build/src apply /build/patches/*.patch
+
 # Install upstream's deps + project into an isolated venv we'll lift into runtime.
 # Upstream uses uv with uv.lock; pip install . is equivalent for the
 # pyproject.toml's setuptools backend and avoids carrying uv into the runtime.

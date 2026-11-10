@@ -100,6 +100,16 @@ WORKDIR /app/source
 COPY --from=builder /app/venv /app/venv
 COPY --from=builder /app/source /app/source
 
+# Remove the base image's own pip. pip 26.2 vendors frozen copies of setuptools
+# 70.3.0 (CVE-2025-47273) and urllib3 2.7.0 (CVE-2026-97687/97689) under
+# pip/_vendor, which Trivy flags under the pathless "Python" target even though
+# nothing here ever runs pip (entrypoint is the venv's python on main.py; the
+# venv's own pip was already removed in the builder). Distroless runtime has no
+# shell, so delete with the venv python; /usr/local is root-owned, hence USER 0.
+USER 0
+RUN ["/app/venv/bin/python", "-c", "import glob,shutil,os; [shutil.rmtree(p,ignore_errors=True) for p in glob.glob('/usr/local/lib/python3.*/site-packages/pip*')]; [os.remove(p) for p in glob.glob('/usr/local/bin/pip*') if os.path.exists(p)]"]
+USER 65532
+
 ENV PATH="/app/venv/bin:${PATH}" \
     PYTHONUNBUFFERED=1 \
     HOME=/app

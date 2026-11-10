@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.0.4] - 2026-11-10
+
 ### Changed
 
 - Added the per-repo constitution as a v1.18.0 manifest (Forked MCP Server):
@@ -17,6 +19,15 @@ All notable changes to this project are documented here. The format follows
 
 - A `.trivyignore` change now rebuilds the image; the push path filter
   skipped it, leaving main's last build red after #13 merged.
+- The builder stage resolved upstream's dependency graph fresh via
+  `pip install /build/src`, despite a comment claiming this was equivalent
+  to upstream's committed `uv.lock` -- it wasn't; pip ignores the lock
+  entirely. Now exports upstream's own `uv.lock` to a requirements file
+  (`uv export --frozen --no-dev --no-emit-project --format requirements-txt`)
+  and installs from it with `--no-deps`, so the venv gets exactly the
+  versions upstream tested against. Upstream's clone was already pinned to
+  an immutable tag (`v1.21.2`), not a moving branch, so no additional ref
+  pinning was needed (RT#1564).
 
 ### Security
 

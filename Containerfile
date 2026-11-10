@@ -38,11 +38,17 @@ ARG WORKSPACE_MCP_VERSION=1.21.2
 RUN git clone --depth 1 --branch v${WORKSPACE_MCP_VERSION} \
         https://github.com/taylorwilsdon/google_workspace_mcp.git /build/src
 
-# Install upstream's deps + project into an isolated venv we'll lift into runtime.
-# Upstream uses uv with uv.lock; pip install . is equivalent for the
-# pyproject.toml's setuptools backend and avoids carrying uv into the runtime.
-RUN python3.13 -m venv /app/venv && \
-    /app/venv/bin/pip install --no-cache-dir /build/src
+# Install upstream's deps + project into an isolated venv we'll lift into
+# runtime. Export upstream's own committed uv.lock to a requirements file and
+# install from it with --no-deps, so transitive versions come from the lock
+# upstream tested against -- not a fresh pip resolve of its loose
+# pyproject.toml constraints.
+RUN python3.13 -m venv /app/venv
+
+RUN pip install --no-cache-dir uv==0.13.7
+RUN cd /build/src && uv export --frozen --no-dev --no-emit-project --format requirements-txt -o /requirements.txt
+RUN /app/venv/bin/pip install --no-cache-dir --no-deps -r /requirements.txt
+RUN /app/venv/bin/pip install --no-cache-dir --no-deps /build/src
 
 # Upstream's pyproject.toml only requires setuptools>=61.0 and doesn't pin
 # msgpack directly (it's transitive), so pip resolves whatever the venv's

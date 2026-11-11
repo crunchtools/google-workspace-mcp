@@ -81,7 +81,8 @@ RUN /app/venv/bin/python -m pip uninstall -y pip && \
 # Stash the source tree in /app/source — main.py and its sibling auth/, etc.
 # modules all need to live together at runtime (they import each other relatively).
 RUN cp -r /build/src /app/source && \
-    rm -rf /app/source/.git
+    rm -rf /app/source/.git && \
+    mkdir -p /app/.local
 
 # Stage 2: Minimal runtime — distroless Hummingbird, no build tools, no shell.
 FROM quay.io/hummingbird/python:3.13
@@ -99,6 +100,10 @@ WORKDIR /app/source
 # Bring in the installed venv and the upstream source tree.
 COPY --from=builder /app/venv /app/venv
 COPY --from=builder /app/source /app/source
+# FastMCP's GoogleProvider (OAuth 2.1 mode, how gloval runs it) keeps its
+# client registry under $HOME/.local; the runtime user must own it or the
+# server exits at startup with "Permission denied: '/app/.local'".
+COPY --from=builder --chown=65532:65532 /app/.local /app/.local
 
 ENV PATH="/app/venv/bin:${PATH}" \
     PYTHONUNBUFFERED=1 \

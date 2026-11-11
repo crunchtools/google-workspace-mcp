@@ -1,0 +1,43 @@
+# Build once, gate the digest, promote what was tested (container-image VII).
+# The pull request builds and gates; the merge promotes that digest to :main;
+# a v* tag copies it to the version tags and :latest.
+#
+# Gate: boot the pushed digest and speak MCP over streamable HTTP (initialize,
+# then tools/list). The server needs Google OAuth client settings to start, so
+# the gate supplies dummy ones, binds 0.0.0.0 (upstream defaults to loopback)
+# and gives it a writable HOME for its credentials directory (production
+# mounts /app/data). The image's own HEALTHCHECK is not the gate: it
+# only proves /health answers, not that the MCP endpoint serves tools.
+name: Container
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  repository_dispatch:
+    types: [parent-image-updated]
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  container:
+    uses: crunchtools/constitution/.github/workflows/container-release.yml@v1.39.1
+    permissions:
+      contents: read
+      pull-requests: read
+    with:
+      image: quay.io/crunchtools/google-workspace-mcp
+      boot: mcp-http
+      boot-port: 8000
+      boot-path: /mcp
+      boot-env: |
+        GOOGLE_OAUTH_CLIENT_ID=gate-dummy.apps.googleusercontent.com
+        GOOGLE_OAUTH_CLIENT_SECRET=gate-dummy
+        WORKSPACE_MCP_HOST=0.0.0.0
+        HOME=/tmp
+      boot-run-args: --tmpfs /tmp:rw,mode=1777
+    secrets:
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}

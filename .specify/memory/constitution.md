@@ -3,7 +3,7 @@
 > **Version:** 1.0.0
 > **Ratified:** 2026-10-02
 > **Status:** Active
-> **Inherits:** [crunchtools/constitution](https://github.com/crunchtools/constitution) v1.31.0
+> **Inherits:** [crunchtools/constitution](https://github.com/crunchtools/constitution) v1.39.1
 > **Profile:** Forked MCP Server
 
 This file holds what is specific to google-workspace-mcp. The fleet rules and
@@ -47,10 +47,9 @@ None to upstream code. The Containerfile changes how it is packaged:
 
 ## Deviations
 
-- **Image name and registries.** The image is
-  `quay.io/crunchtools/google-workspace-mcp`, not `mcp-<name>`, and
-  `build.yml` also pushes `ghcr.io/crunchtools/google-workspace-mcp`. Both
-  predate the profile; renaming would break running deployments.
+- **Image name.** The image is `quay.io/crunchtools/google-workspace-mcp`,
+  not `mcp-<name>`. It predates the profile; renaming would break running
+  deployments. Quay.io is the only registry.
 - **Accepted CVEs.** `.trivyignore` accepts GHSA-6v7p-g79w-8964 and
   CVE-2025-47273 in pip's vendored copies inside the Hummingbird base image,
   which this repo cannot patch and which nothing in the image invokes.

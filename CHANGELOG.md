@@ -8,6 +8,12 @@ All notable changes to this project are documented here. The format follows
 
 ### Changed
 
+- Container builds moved to constitution v1.39.1's `container-release.yml`:
+  build once per PR, boot-gate the digest (MCP initialize + tools/list over
+  streamable HTTP), promote by `skopeo copy --all --preserve-digests`. `:latest`
+  now moves only on a `v*` tag. Quay.io is the only registry; GHCR dropped.
+- Containerfile installs dependencies from upstream's `uv.lock` with `--no-deps`
+  (RT#1564); inherits constitution v1.39.1.
 - Added the per-repo constitution as a v1.18.0 manifest (Forked MCP Server):
   upstream, deployment, packaging patches and deviations only.
 - Constitution validation pinned to v1.18.0 via `constitution.yml`.

@@ -13,15 +13,15 @@ All notable changes to this project are documented here. The format follows
   user. The first `:main` exited at startup with `Permission denied`. The boot
   gate now runs with production's settings and the image's own HOME, and
   waits on the image's HEALTHCHECK (in OAuth 2.1 mode `/mcp` needs a real
-  Google token). Constitution v1.39.3.
+  Google token).
 
 ### Changed
 
-- Container builds moved to constitution v1.39.1's `container-release.yml`:
+- Container builds moved to constitution v1.39.3's `container-release.yml`:
   build once per PR, boot-gate the digest, promote by `skopeo copy --all --preserve-digests`. `:latest`
   now moves only on a `v*` tag. Quay.io is the only registry; GHCR dropped.
 - Containerfile installs dependencies from upstream's `uv.lock` with `--no-deps`
-  (RT#1564); inherits constitution v1.39.1.
+  (RT#1564); inherits constitution v1.39.3.
 - Added the per-repo constitution as a v1.18.0 manifest (Forked MCP Server):
   upstream, deployment, packaging patches and deviations only.
 - Constitution validation pinned to v1.18.0 via `constitution.yml`.

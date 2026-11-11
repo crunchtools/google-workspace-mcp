@@ -38,11 +38,17 @@ ARG WORKSPACE_MCP_VERSION=1.21.2
 RUN git clone --depth 1 --branch v${WORKSPACE_MCP_VERSION} \
         https://github.com/taylorwilsdon/google_workspace_mcp.git /build/src
 
-# Install upstream's deps + project into an isolated venv we'll lift into runtime.
-# Upstream uses uv with uv.lock; pip install . is equivalent for the
-# pyproject.toml's setuptools backend and avoids carrying uv into the runtime.
+# Dependencies come from upstream's committed uv.lock, not a fresh resolve of
+# pyproject's floors (RT#1564). uv is installed only to export the lock; this
+# stage is discarded. --no-deps on both installs is load-bearing: it stops pip
+# re-resolving past the versions the lock already pinned.
+RUN pip install --no-cache-dir uv==0.13.7 && \
+    cd /build/src && \
+    uv export --frozen --no-dev --no-emit-project \
+        --format requirements-txt -o /tmp/requirements.txt
 RUN python3.13 -m venv /app/venv && \
-    /app/venv/bin/pip install --no-cache-dir /build/src
+    /app/venv/bin/pip install --no-cache-dir --no-deps -r /tmp/requirements.txt && \
+    /app/venv/bin/pip install --no-cache-dir --no-deps /build/src
 
 # Upstream's pyproject.toml only requires setuptools>=61.0 and doesn't pin
 # msgpack directly (it's transitive), so pip resolves whatever the venv's
@@ -54,7 +60,7 @@ RUN python3.13 -m venv /app/venv && \
 #     on Unpacker reuse after error, HIGH)
 #   - setuptools 70.3.0 -> 78.1.1: CVE-2025-47273 (path traversal in
 #     PackageIndex, HIGH)
-RUN /app/venv/bin/pip install --no-cache-dir --upgrade \
+RUN /app/venv/bin/pip install --no-cache-dir --upgrade --no-deps \
         'msgpack>=1.2.1' 'setuptools>=78.1.1'
 
 # The upgrade above only touches the top-level packages -- it does not touch

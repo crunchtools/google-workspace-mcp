@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.0.4] - 2026-11-11
+
 ### Fixed
 
 - The image starts in OAuth 2.1 mode, as gloval runs it: `/app/.local`, where

@@ -3,7 +3,7 @@
 > **Version:** 1.0.0
 > **Ratified:** 2026-10-02
 > **Status:** Active
-> **Inherits:** [crunchtools/constitution](https://github.com/crunchtools/constitution) v1.39.1
+> **Inherits:** [crunchtools/constitution](https://github.com/crunchtools/constitution) v1.39.3
 > **Profile:** Forked MCP Server
 
 This file holds what is specific to google-workspace-mcp. The fleet rules and

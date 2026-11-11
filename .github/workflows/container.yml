@@ -23,21 +23,26 @@ permissions: {}
 
 jobs:
   container:
-    uses: crunchtools/constitution/.github/workflows/container-release.yml@v1.39.1
+    uses: crunchtools/constitution/.github/workflows/container-release.yml@v1.39.3
     permissions:
       contents: read
       pull-requests: read
     with:
       image: quay.io/crunchtools/google-workspace-mcp
-      boot: mcp-http
-      boot-port: 8000
-      boot-path: /mcp
+      boot: healthcheck
+      # Production's settings (gloval mcp-gw-personal: OAuth 2.1, stateless)
+      # with dummy credentials, and the image's own HOME: a gate that
+      # overrides HOME missed the unwritable /app/.local that crash-looped
+      # the first :main. In OAuth 2.1 mode /mcp answers 401 without a real
+      # Google token, so the gate is the image's own /health HEALTHCHECK.
       boot-env: |
         GOOGLE_OAUTH_CLIENT_ID=gate-dummy.apps.googleusercontent.com
         GOOGLE_OAUTH_CLIENT_SECRET=gate-dummy
         WORKSPACE_MCP_HOST=0.0.0.0
-        HOME=/tmp
-      boot-run-args: --tmpfs /tmp:rw,mode=1777
+        EXTERNAL_OAUTH21_PROVIDER=true
+        MCP_ENABLE_OAUTH21=true
+        WORKSPACE_MCP_STATELESS_MODE=true
+        WORKSPACE_EXTERNAL_URL=http://localhost:8000/mcp
     secrets:
       QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
       QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}

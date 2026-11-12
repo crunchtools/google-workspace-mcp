@@ -1,6 +1,6 @@
 # google-workspace-mcp Constitution
 
-> **Version:** 1.0.0
+> **Version:** 1.1.0
 > **Ratified:** 2026-10-02
 > **Status:** Active
 > **Inherits:** [crunchtools/constitution](https://github.com/crunchtools/constitution) v1.39.3
@@ -50,14 +50,17 @@ None to upstream code. The Containerfile changes how it is packaged:
 - **Image name.** The image is `quay.io/crunchtools/google-workspace-mcp`,
   not `mcp-<name>`. It predates the profile; renaming would break running
   deployments. Quay.io is the only registry.
-- **Accepted CVEs.** `.trivyignore` accepts GHSA-6v7p-g79w-8964 and
-  CVE-2025-47273 in pip's vendored copies inside the Hummingbird base image,
+- **Accepted CVEs.** GHSA-6v7p-g79w-8964 and CVE-2025-47273 sit in pip's
+  vendored copies inside the Hummingbird base image,
   which this repo cannot patch and which nothing in the image invokes.
-  Accepted by Scott on 2026-09-20; drop the entries when Hummingbird ships a
-  base image without the stale vendored pip.
+  Accepted by Scott on 2026-09-20; they clear when Hummingbird ships a base
+  image without the stale vendored pip. They were `.trivyignore` entries until
+  the per-build scan was retired (constitution 1.40.0); the fleet CVE check
+  (RT #1551) reports them now.
 
 ## History
 
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0.0 | 2026-10-02 | Initial manifest under constitution v1.18.0 |
+| 1.1.0 | 2026-11-11 | `.trivyignore` retired with the fleet's per-build scan (constitution 1.40.0); the accepted pip CVEs are recorded here and reported by the fleet CVE check (RT #1551) |

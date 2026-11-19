@@ -6,6 +6,15 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Security
+
+- Four packages upstream v1.21.2's lock pins with critical advisories are
+  forced past them: certifi 2026.10.18, authlib 1.9.0, anyio 4.14.2,
+  pyjwt 2.14.0, with `pip check` in the build.
+- Upstream's `.github/` and `uv.lock` no longer ship in `/app/source`. The
+  former's `pypa/gh-action-pypi-publish@release/v1` (GHSA-5xjx-3w67-w9x9,
+  critical) failed the grype gate; neither is read at runtime.
+
 ## [1.0.4] - 2026-11-11
 
 ### Fixed

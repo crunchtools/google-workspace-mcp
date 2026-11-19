@@ -60,8 +60,15 @@ RUN python3.13 -m venv /app/venv && \
 #     on Unpacker reuse after error, HIGH)
 #   - setuptools 70.3.0 -> 78.1.1: CVE-2025-47273 (path traversal in
 #     PackageIndex, HIGH)
+#   - upstream v1.21.2's uv.lock pins four packages with CRITICAL advisories:
+#     certifi 2026.2.25 -> 2026.10.18 (GHSA-6q48-6c7w-9gw2), authlib 1.7.1 ->
+#     1.9.0 (GHSA-6v38-4h7w-rj9h), anyio 4.13.0 -> 4.14.2
+#     (GHSA-82r6-8w77-94w6), pyjwt 2.12.1 -> 2.14.0 (GHSA-ffc3-869f-jxw9).
+# pip check confirms the forced versions still satisfy every declared range.
 RUN /app/venv/bin/pip install --no-cache-dir --upgrade --no-deps \
-        'msgpack>=1.2.1' 'setuptools>=78.1.1'
+        'msgpack>=1.2.1' 'setuptools>=78.1.1' 'certifi>=2026.10.18' \
+        'authlib==1.9.0' 'anyio==4.14.2' 'pyjwt==2.14.0' && \
+    /app/venv/bin/pip check
 
 # The upgrade above only touches the top-level packages -- it does not touch
 # pip's OWN internally vendored copies. pip bundles frozen, unrelated
@@ -80,8 +87,11 @@ RUN /app/venv/bin/python -m pip uninstall -y pip && \
 
 # Stash the source tree in /app/source — main.py and its sibling auth/, etc.
 # modules all need to live together at runtime (they import each other relatively).
+# Upstream's .github/ and uv.lock are never read at runtime. Shipping them
+# shows grype a pypa/gh-action-pypi-publish@release/v1 (GHSA-5xjx-3w67-w9x9,
+# CRITICAL) and a lock whose versions the upgrade above has overridden.
 RUN cp -r /build/src /app/source && \
-    rm -rf /app/source/.git && \
+    rm -rf /app/source/.git /app/source/.github /app/source/uv.lock && \
     mkdir -p /app/.local
 
 # Stage 2: Minimal runtime — distroless Hummingbird, no build tools, no shell.

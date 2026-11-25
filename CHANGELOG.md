@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.0.5] - 2026-11-25
+
 ### Security
 
 - Four packages upstream v1.21.2's lock pins with critical advisories are
